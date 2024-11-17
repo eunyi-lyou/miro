@@ -27,6 +27,13 @@ BLOCKNAMES = {
         "block3": ["transformer.resblocks.6", "transformer.resblocks.7", "transformer.resblocks.8"],
         "block4": ["transformer.resblocks.9", "transformer.resblocks.10", "transformer.resblocks.11"],
     },
+    "swin": {
+        "stem": ["embeddings.patch_embeddings.projection"],
+        "block1": ["encoder.layers.0.downsample"],
+        "block2": ["encoder.layers.1.downsample"],
+        "block3": ["encoder.layers.2.downsample"],
+        "block4": ["encoder.layers.3.downsample"],
+    },
     "regnety": {
         "stem": ["stem"],
         "block1": ["trunk_output.block1"],
@@ -86,6 +93,8 @@ class URResNet(torch.nn.Module):
             block_names = BLOCKNAMES["regnety"]
         elif hparams.model.startswith("vit"):
             block_names = BLOCKNAMES["vit"]
+        elif hparams.model.startswith("swin"):
+            block_names = BLOCKNAMES["swin"]
         else:
             raise ValueError(hparams.model)
 
@@ -135,7 +144,7 @@ class URResNet(torch.nn.Module):
             module_name = module_names[-1]
             feat_layers.append(module_name)
 
-        #  print(f"feat layers = {feat_layers}")
+        # print(f"feat layers = {feat_layers}")
 
         for n, m in self.network.named_modules():
             if n in feat_layers:
@@ -146,7 +155,14 @@ class URResNet(torch.nn.Module):
     def forward(self, x, ret_feats=False):
         """Encode x into a feature vector of size n_outputs."""
         self.clear_features()
-        out = self.dropout(self.network(x))
+        # print(self.network(x).last_hidden_state.shape) # B, 49, 1024
+        # print(self.network(x).pooler_output.shape) # B, 1024
+        # print(self.network(x).shape) # B, 512
+        try:
+            out = self.dropout(self.network(x))
+        except:
+            out = self.dropout(self.network(x).pooler_output)
+
         if ret_feats:
             return out, self._features
         else:

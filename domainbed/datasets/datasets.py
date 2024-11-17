@@ -237,7 +237,8 @@ class OfficeHome(MultipleEnvironmentImageFolder):
     ENVIRONMENTS = ["A", "C", "P", "R"]
 
     def __init__(self, root):
-        self.dir = os.path.join(root, "office_home/")
+        # self.dir = os.path.join(root, "office_home/")
+        self.dir = root
         super().__init__(self.dir)
 
 

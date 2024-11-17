@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torchvision.models
 import clip
-
+from transformers import Swinv2Model
 
 def clip_imageencoder(name):
     model, _preprocess = clip.load(name, device="cpu")
@@ -47,6 +47,9 @@ def get_backbone(name, preserve_readout, pretrained):
     elif name == "resnet50_barlowtwins":
         network = torch.hub.load('facebookresearch/barlowtwins:main', 'resnet50')
         n_outputs = 2048
+    elif name == "swin":
+        network = Swinv2Model.from_pretrained("microsoft/swinv2-base-patch4-window12-192-22k")
+        n_outputs = 1024
     elif name == "resnet50_moco":
         network = torchvision.models.resnet50()
 
